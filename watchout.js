@@ -3,7 +3,9 @@ var gameOptions = {
   height: 900,
   nEnemies: 20,
   padding: 10,
-  score: 0
+  score: 0,
+  hiScore: 0,
+  collision: 0
 }
 
 var svg = d3.select('body').append('svg')
@@ -36,6 +38,7 @@ enemies.enter().append('image')
   .attr('width', 50)
 
 
+
 function moveEnemies() {
   _.each(enemies_data, function(item) {
     item.x = Math.random()*100;
@@ -46,17 +49,26 @@ function moveEnemies() {
 
   enemies.transition().duration(1000)
          .attr('x', function(enemy) { return axes.x(enemy.x)})
-         .attr('y', function(enemy) { return axes.y(enemy.y)});
+         .attr('y', function(enemy) { return axes.y(enemy.y)})
+         .attr('r', 15)
+         .tween('custom', tweenWithCollisionDetection);
+
 
 }
 var increaseScore = function() {
   gameOptions.score++;
   d3.select('.current span')
-    .text(gameOptions.score.toString())
+    .text(gameOptions.score.toString());
 };
 
 var resetScore = function() {
+  if (gameOptions.hiScore < gameOptions.score) {
+    gameOptions.hiScore = gameOptions.score;
+  } ;
+  d3.select(".high span").text(gameOptions.hiScore.toString());
   gameOptions.score = 0;
+  gameOptions.collision++;
+  d3.select(".collisions span").text(gameOptions.collision.toString());
 }
 
 setInterval(increaseScore, 50);
@@ -64,12 +76,33 @@ setInterval(moveEnemies, 1500);
 
 var checkCollision = function(enemy, cb) {
   radiusSum = parseFloat(enemy.attr('r')) + player.r;
-  xDiff = parseFloat(enemy.attr('cx')) - player.x;
-  yDiff = parseFloat(enemy.attr('cy')) - player.y;
-
+  xDiff = parseFloat(enemy.attr('x')) - player.x;
+  yDiff = parseFloat(enemy.attr('y')) - player.y;
   separation = Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2))
   if (separation < radiusSum) cb(player, enemy);
 };
+
+ var tweenWithCollisionDetection = function(endData) {
+      var endPos, enemy, startPos;
+      enemy = d3.select(this);
+      startPos = {
+        x: parseFloat(enemy.attr('x')),
+        y: parseFloat(enemy.attr('y'))
+      };
+      endPos = {
+        x: axes.x(endData.x),
+        y: axes.y(endData.y)
+      };
+      return function(t) {
+        var enemyNextPos;
+        checkCollision(enemy, resetScore);
+        enemyNextPos = {
+          x: startPos.x + (endPos.x - startPos.x) * t,
+          y: startPos.y + (endPos.y - startPos.y) * t
+        };
+        return enemy.attr('x', enemyNextPos.x).attr('y', enemyNextPos.y);
+      };
+    };
 
 var player = {
 
@@ -78,7 +111,7 @@ var player = {
   x: 0,
   y: 0,
   angle: -30,
-  r: 5,
+  r: 15,
 
   render: function(){
     this.el = svg.append('image')
