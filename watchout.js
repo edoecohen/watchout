@@ -83,24 +83,22 @@ var checkCollision = function(enemy, cb) {
 };
 
  var tweenWithCollisionDetection = function(endData) {
-      var endPos, enemy, startPos;
-      enemy = d3.select(this);
-      startPos = {
+      var enemy = d3.select(this);
+      var start = {
         x: parseFloat(enemy.attr('x')),
         y: parseFloat(enemy.attr('y'))
       };
-      endPos = {
+      var end = {
         x: axes.x(endData.x),
         y: axes.y(endData.y)
       };
       return function(t) {
-        var enemyNextPos;
         checkCollision(enemy, resetScore);
-        enemyNextPos = {
-          x: startPos.x + (endPos.x - startPos.x) * t,
-          y: startPos.y + (endPos.y - startPos.y) * t
+        var enemyNextPosition = {
+          x: start.x + (end.x - start.x) * t,
+          y: start.y + (end.y - start.y) * t
         };
-        return enemy.attr('x', enemyNextPos.x).attr('y', enemyNextPos.y);
+        return enemy.attr('x', enemyNextPosition.x).attr('y', enemyNextPosition.y);
       };
     };
 
