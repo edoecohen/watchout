@@ -2,7 +2,8 @@ var gameOptions = {
   width: 1440,
   height: 900,
   nEnemies: 20,
-  padding: 10
+  padding: 10,
+  score: 0
 }
 
 var svg = d3.select('body').append('svg')
@@ -48,9 +49,27 @@ function moveEnemies() {
          .attr('y', function(enemy) { return axes.y(enemy.y)});
 
 }
+var increaseScore = function() {
+  gameOptions.score++;
+  d3.select('.current span')
+    .text(gameOptions.score.toString())
+};
 
+var resetScore = function() {
+  gameOptions.score = 0;
+}
+
+setInterval(increaseScore, 50);
 setInterval(moveEnemies, 1500);
 
+var checkCollision = function(enemy, cb) {
+  radiusSum = parseFloat(enemy.attr('r')) + player.r;
+  xDiff = parseFloat(enemy.attr('cx')) - player.x;
+  yDiff = parseFloat(enemy.attr('cy')) - player.y;
+
+  separation = Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2))
+  if (separation < radiusSum) cb(player, enemy);
+};
 
 var player = {
 
