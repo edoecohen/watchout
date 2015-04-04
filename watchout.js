@@ -1,6 +1,6 @@
 var gameOptions = {
-  width: 1200,
-  height: 800,
+  width: 1440,
+  height: 900,
   nEnemies: 20,
   padding: 10
 }
@@ -58,12 +58,13 @@ var player = {
   fill: '#ff6600',
   x: 0,
   y: 0,
-  angle: 0,
+  angle: -30,
   r: 5,
 
   render: function(){
     this.el = svg.append('image')
               .attr('d', this.path)
+              .attr('class', 'player')
               .attr('xlink:href', 'spaceship.png')
               .attr('width', 50)
               .attr('height', 48);
@@ -73,6 +74,10 @@ var player = {
       gameOptions.width * 0.5,
       gameOptions.height * 0.5
     )
+  },
+
+  moveRelative: function(dx, dy) {
+    this.transform(this.getx() + dx, this.gety() + dy, 360 * (Math.atan2(dy, dx) / (Math.PI*2)));
   },
 
   getx: function() {
@@ -105,11 +110,25 @@ var player = {
     this.sety(y);
 
     this.el.attr('transform',
-      "rotate(" + this.angle + "," +this.getx()+ "," +this.gety()+ "), "+
-      "translate(" +this.getx() + "," + this.gety() + ")")
-  }
+      "rotate(" + this.angle + "," +this.getx()+ "," +this.gety()+ "), "
+      +"translate(" +this.getx() + "," + this.gety() + ")");
+  },
+
+
+
+
+
+
 };
+
 player.render();
+var dragMov = function() {
+      player.moveRelative(d3.event.dx, d3.event.dy);
+     }
+
+var drag = d3.behavior.drag().on('drag', dragMov);
+player.el.call(drag);
+
 // player.transform(gameOptions.width * 0.5, gameOptions.height * 0.5);
 
 
